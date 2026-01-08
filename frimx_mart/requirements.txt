@@ -9,3 +9,4 @@ sqlparse==0.5.5
 typing_extensions==4.15.0
 # PostgreSQL support (optional - only needed for production)
 psycopg2-binary==2.9.11
+gunicorn==23.0.0
