@@ -108,4 +108,4 @@ frimx_mart/
 
 ## License
 
-Copyright © 2024 OpenMart. All rights reserved.
+Copyright © 2026 OpenMart. All rights reserved.
