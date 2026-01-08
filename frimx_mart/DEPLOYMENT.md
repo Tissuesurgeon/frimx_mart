@@ -80,23 +80,97 @@ git push -u origin main
 
 ### Environment Variables to Set:
 
+**Required:**
 - `SECRET_KEY` - Generate new secret key
 - `DEBUG=False`
 - `ALLOWED_HOSTS=yourdomain.com,www.yourdomain.com`
+
+**PostgreSQL Database (Production):**
 - `DATABASE_ENGINE=django.db.backends.postgresql`
-- `DATABASE_NAME`, `DATABASE_USER`, `DATABASE_PASSWORD`, `DATABASE_HOST`, `DATABASE_PORT`
-- `EMAIL_BACKEND`, `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`
+- `DATABASE_NAME=your_database_name` (required)
+- `DATABASE_USER=your_database_user` (required)
+- `DATABASE_PASSWORD=your_database_password` (required)
+- `DATABASE_HOST=localhost` (or your DB host, default: localhost)
+- `DATABASE_PORT=5432` (default: 5432)
+- `DATABASE_CONN_MAX_AGE=0` (optional, connection pooling, default: 0)
+- `DATABASE_CONNECT_TIMEOUT=10` (optional, connection timeout in seconds, default: 10)
+
+**Email Configuration:**
+- `EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend`
+- `EMAIL_HOST=smtp.gmail.com` (or your SMTP server)
+- `EMAIL_PORT=587`
+- `EMAIL_USE_TLS=True`
+- `EMAIL_HOST_USER=your-email@gmail.com`
+- `EMAIL_HOST_PASSWORD=your-email-password`
+- `DEFAULT_FROM_EMAIL=noreply@openmart.com`
 - `SITE_URL=https://yourdomain.com`
 
 ### Commands to Run:
 
 ```bash
+# Install dependencies (includes psycopg2-binary for PostgreSQL)
 pip install -r requirements.txt
+
+# Run migrations (creates tables in PostgreSQL)
 python manage.py migrate
+
+# Collect static files
 python manage.py collectstatic --noinput
-python manage.py seed_categories  # Optional
+
+# Seed categories (optional)
+python manage.py seed_categories
+
+# Create superuser (optional)
+python manage.py createsuperuser
+
+# Run with Gunicorn
 gunicorn frimx_mart.wsgi:application
 ```
+
+### PostgreSQL Setup Notes:
+
+1. **Install PostgreSQL** (if not already installed):
+   ```bash
+   # Ubuntu/Debian
+   sudo apt-get install postgresql postgresql-contrib
+   
+   # macOS (with Homebrew)
+   brew install postgresql
+   ```
+
+2. **Create Database and User**:
+   ```bash
+   # Connect to PostgreSQL
+   sudo -u postgres psql
+   
+   # Create database
+   CREATE DATABASE your_database_name;
+   
+   # Create user
+   CREATE USER your_database_user WITH PASSWORD 'your_database_password';
+   
+   # Grant privileges
+   GRANT ALL PRIVILEGES ON DATABASE your_database_name TO your_database_user;
+   
+   # Exit PostgreSQL
+   \q
+   ```
+
+3. **Update .env file** with PostgreSQL credentials:
+   ```env
+   DATABASE_ENGINE=django.db.backends.postgresql
+   DATABASE_NAME=your_database_name
+   DATABASE_USER=your_database_user
+   DATABASE_PASSWORD=your_database_password
+   DATABASE_HOST=localhost
+   DATABASE_PORT=5432
+   ```
+
+4. **Test Connection**:
+   ```bash
+   python manage.py check --database default
+   python manage.py migrate
+   ```
 
 ## Generate New Secret Key
 

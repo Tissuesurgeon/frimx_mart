@@ -90,27 +90,93 @@ WSGI_APPLICATION = "frimx_mart.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASE_ENGINE = os.environ.get('DATABASE_ENGINE', 'django.db.backends.sqlite3')
+# Support for DATABASE_URL (common in cloud platforms like Render, Heroku, etc.)
+# Format: postgresql://user:password@host:port/database
+DATABASE_URL = os.environ.get('DATABASE_URL')
 
-if DATABASE_ENGINE == 'django.db.backends.sqlite3':
+if DATABASE_URL:
+    # Parse DATABASE_URL if provided
+    from urllib.parse import urlparse
+    
+    # Parse the database URL
+    url = urlparse(DATABASE_URL)
+    
+    # Extract components
+    db_name = url.path[1:]  # Remove leading '/'
+    db_user = url.username
+    db_password = url.password
+    db_host = url.hostname
+    db_port = url.port or '5432'
+    
     DATABASES = {
         "default": {
-            "ENGINE": DATABASE_ENGINE,
-            "NAME": BASE_DIR / os.environ.get('DATABASE_NAME', 'db.sqlite3'),
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": db_name,
+            "USER": db_user,
+            "PASSWORD": db_password,
+            "HOST": db_host,
+            "PORT": db_port,
+            "OPTIONS": {
+                # Connection timeout
+                "connect_timeout": int(os.environ.get('DATABASE_CONNECT_TIMEOUT', '10')),
+            },
+            # Connection pooling settings (optional)
+            "CONN_MAX_AGE": int(os.environ.get('DATABASE_CONN_MAX_AGE', '0')),  # 0 = no persistent connections
         }
     }
 else:
-    # PostgreSQL or other database
-    DATABASES = {
-        "default": {
-            "ENGINE": DATABASE_ENGINE,
-            "NAME": os.environ.get('DATABASE_NAME'),
-            "USER": os.environ.get('DATABASE_USER'),
-            "PASSWORD": os.environ.get('DATABASE_PASSWORD'),
-            "HOST": os.environ.get('DATABASE_HOST', 'localhost'),
-            "PORT": os.environ.get('DATABASE_PORT', '5432'),
+    # Determine database engine from environment variable
+    # For SQLite (development): DATABASE_ENGINE=django.db.backends.sqlite3
+    # For PostgreSQL (production): DATABASE_ENGINE=django.db.backends.postgresql
+    DATABASE_ENGINE = os.environ.get('DATABASE_ENGINE', 'django.db.backends.sqlite3')
+
+    if DATABASE_ENGINE == 'django.db.backends.sqlite3':
+        # SQLite configuration (default for development)
+        DATABASES = {
+            "default": {
+                "ENGINE": DATABASE_ENGINE,
+                "NAME": BASE_DIR / os.environ.get('DATABASE_NAME', 'db.sqlite3'),
+            }
         }
-    }
+    elif DATABASE_ENGINE == 'django.db.backends.postgresql':
+        # PostgreSQL configuration (for production)
+        DATABASES = {
+            "default": {
+                "ENGINE": DATABASE_ENGINE,
+                "NAME": os.environ.get('DATABASE_NAME'),
+                "USER": os.environ.get('DATABASE_USER'),
+                "PASSWORD": os.environ.get('DATABASE_PASSWORD'),
+                "HOST": os.environ.get('DATABASE_HOST', 'localhost'),
+                "PORT": os.environ.get('DATABASE_PORT', '5432'),
+                "OPTIONS": {
+                    # Connection timeout
+                    "connect_timeout": int(os.environ.get('DATABASE_CONNECT_TIMEOUT', '10')),
+                },
+                # Connection pooling settings (optional)
+                "CONN_MAX_AGE": int(os.environ.get('DATABASE_CONN_MAX_AGE', '0')),  # 0 = no persistent connections
+            }
+        }
+        
+        # Validate required PostgreSQL environment variables
+        required_postgres_vars = ['DATABASE_NAME', 'DATABASE_USER', 'DATABASE_PASSWORD']
+        missing_vars = [var for var in required_postgres_vars if not os.environ.get(var)]
+        if missing_vars:
+            raise ValueError(
+                f"Missing required PostgreSQL environment variables: {', '.join(missing_vars)}. "
+                f"Please set these in your .env file or environment."
+            )
+    else:
+        # Other database engines (MySQL, etc.)
+        DATABASES = {
+            "default": {
+                "ENGINE": DATABASE_ENGINE,
+                "NAME": os.environ.get('DATABASE_NAME'),
+                "USER": os.environ.get('DATABASE_USER'),
+                "PASSWORD": os.environ.get('DATABASE_PASSWORD'),
+                "HOST": os.environ.get('DATABASE_HOST', 'localhost'),
+                "PORT": os.environ.get('DATABASE_PORT', ''),
+            }
+        }
 
 
 # Password validation

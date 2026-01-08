@@ -48,17 +48,36 @@ Copy the output and update `SECRET_KEY` in your `.env` file.
 
 ### Database Variables
 
+**Option 1: Using DATABASE_URL (Recommended for Cloud Platforms)**
+- `DATABASE_URL=postgresql://user:password@host:port/database`
+  - Example: `DATABASE_URL=postgresql://openmart_user:password@dpg-xxx.render.com/openmart`
+  - This is the preferred method for cloud platforms like Render, Heroku, Railway, etc.
+  - If `DATABASE_URL` is set, it takes precedence over individual database settings
+
+**Option 2: Individual Database Settings**
+
 For SQLite (Development):
 - `DATABASE_ENGINE=django.db.backends.sqlite3`
 - `DATABASE_NAME=db.sqlite3`
 
 For PostgreSQL (Production):
-- `DATABASE_ENGINE=django.db.backends.postgresql`
-- `DATABASE_NAME=your_database_name`
-- `DATABASE_USER=your_database_user`
-- `DATABASE_PASSWORD=your_database_password`
-- `DATABASE_HOST=localhost` (or your DB host)
-- `DATABASE_PORT=5432`
+- `DATABASE_ENGINE=django.db.backends.postgresql` (required)
+- `DATABASE_NAME=your_database_name` (required)
+- `DATABASE_USER=your_database_user` (required)
+- `DATABASE_PASSWORD=your_database_password` (required)
+- `DATABASE_HOST=localhost` (optional, default: localhost)
+- `DATABASE_PORT=5432` (optional, default: 5432)
+- `DATABASE_CONN_MAX_AGE=0` (optional, connection pooling in seconds, default: 0)
+- `DATABASE_CONNECT_TIMEOUT=10` (optional, connection timeout in seconds, default: 10)
+
+**Note:** Make sure `psycopg2-binary` is installed for PostgreSQL support:
+```bash
+pip install psycopg2-binary
+```
+Or install all requirements:
+```bash
+pip install -r requirements.txt
+```
 
 ### Email Variables
 
