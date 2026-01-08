@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - OpenMart{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="fas fa-tachometer-alt"></i> My Dashboard</h2>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-primary">{{ active_listings }}</h3>
+                <p class="text-muted">Active Listings</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-success">{{ sold_listings }}</h3>
+                <p class="text-muted">Sold Listings</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-info">₵{{ total_revenue|floatformat:2 }}</h3>
+                <p class="text-muted">Total Revenue</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Listings -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-list"></i> Recent Listings</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_listings %}
+                <ul class="list-group">
+                    {% for listing in recent_listings %}
+                    <li class="list-group-item">
+                        <a href="{% url 'listing_detail' listing.id %}">{{ listing.title }}</a>
+                        <span class="badge bg-{% if listing.is_sold %}success{% else %}primary{% endif %} float-end">
+                            {% if listing.is_sold %}Sold{% else %}Active{% endif %}
+                        </span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted">No listings yet. <a href="{% url 'create_listing' %}">Create your first listing!</a></p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Chats -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-comments"></i> Recent Messages</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_chats %}
+                <ul class="list-group">
+                    {% for chat in recent_chats %}
+                    <li class="list-group-item">
+                        <a href="{% url 'chat_detail' chat.id %}">
+                            {% if chat.buyer == user %}
+                            {{ chat.seller.username }}
+                            {% else %}
+                            {{ chat.buyer.username }}
+                            {% endif %}
+                        </a>
+                        <small class="text-muted float-end">{{ chat.updated_at|timesince }} ago</small>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted">No messages yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Saved Listings -->
+{% if saved_listings %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-heart"></i> Saved Listings</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for saved in saved_listings %}
+                    <div class="col-md-3 mb-3">
+                        <div class="card">
+                            {% if saved.listing.images.first %}
+                            <img src="{{ saved.listing.images.first.image.url }}" class="card-img-top" alt="{{ saved.listing.title }}" style="height: 150px; object-fit: cover;">
+                            {% endif %}
+                            <div class="card-body">
+                                <h6 class="card-title">{{ saved.listing.title|truncatewords:5 }}</h6>
+                                <p class="text-primary fw-bold">₵{{ saved.listing.price }}</p>
+                                <a href="{% url 'listing_detail' saved.listing.id %}" class="btn btn-sm btn-primary">View</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}Mark as Sold - OpenMart{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h3 class="mb-0"><i class="fas fa-check"></i> Mark as Sold</h3>
+            </div>
+            <div class="card-body">
+                <p>Are you sure you want to mark "<strong>{{ listing.title }}</strong>" as sold?</p>
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check"></i> Yes, Mark as Sold
+                    </button>
+                    <a href="{% url 'listing_detail' listing.id %}" class="btn btn-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

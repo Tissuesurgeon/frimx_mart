@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ listing.title }} - OpenMart{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <!-- Images -->
+        <div class="card mb-4">
+            <div class="card-body">
+                {% if listing.images.first %}
+                <img src="{{ listing.images.first.image.url }}" class="img-fluid rounded mb-3" alt="{{ listing.title }}">
+                {% endif %}
+                {% if listing.images.count > 1 %}
+                <div class="row">
+                    {% for image in listing.images.all|slice:"1:" %}
+                    <div class="col-3 mb-2">
+                        <img src="{{ image.image.url }}" class="img-thumbnail" alt="{{ listing.title }}" style="height: 100px; width: 100%; object-fit: cover;">
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Description -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Description</h5>
+            </div>
+            <div class="card-body">
+                <p>{{ listing.description|linebreaks }}</p>
+            </div>
+        </div>
+
+        <!-- Seller Reviews -->
+        {% if seller_reviews %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Seller Reviews</h5>
+            </div>
+            <div class="card-body">
+                {% for review in seller_reviews %}
+                <div class="mb-3 pb-3 border-bottom">
+                    <div class="d-flex justify-content-between">
+                        <strong>{{ review.buyer.username }}</strong>
+                        <div>
+                            {% for i in "12345" %}
+                            {% if forloop.counter <= review.rating %}
+                            <i class="fas fa-star text-warning"></i>
+                            {% else %}
+                            <i class="far fa-star text-muted"></i>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <p class="mb-0">{{ review.comment }}</p>
+                    <small class="text-muted">{{ review.created_at|date:"M d, Y" }}</small>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-md-4">
+        <!-- Listing Info -->
+        <div class="card mb-4 sticky-top" style="top: 20px;">
+            <div class="card-body">
+                <h3 class="card-title">{{ listing.title }}</h3>
+                <h2 class="text-primary mb-3">₵{{ listing.price }}</h2>
+                {% if listing.negotiable %}
+                <span class="badge bg-info">Price Negotiable</span>
+                {% endif %}
+                <hr>
+                <p><strong>Condition:</strong> {{ listing.get_condition_display }}</p>
+                <p><strong>Location:</strong> {{ listing.location }}</p>
+                <p><strong>Category:</strong> {{ listing.category.name }}</p>
+                <p><strong>Views:</strong> {{ listing.views }}</p>
+                <hr>
+                <div class="d-grid gap-2">
+                    {% if user.is_authenticated %}
+                    {% if user != listing.seller %}
+                    <a href="{% url 'start_chat' listing.id %}" class="btn btn-primary">
+                        <i class="fas fa-comments"></i> Contact Seller
+                    </a>
+                    <form method="post" action="{% url 'save_listing' listing.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-primary">
+                            {% if is_saved %}
+                            <i class="fas fa-heart"></i> Saved
+                            {% else %}
+                            <i class="far fa-heart"></i> Save
+                            {% endif %}
+                        </button>
+                    </form>
+                    <a href="{% url 'create_listing_report' listing.id %}" class="btn btn-outline-danger btn-sm">
+                        <i class="fas fa-flag"></i> Report Listing
+                    </a>
+                    {% else %}
+                    <a href="{% url 'edit_listing' listing.id %}" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Edit Listing
+                    </a>
+                    <a href="{% url 'mark_as_sold' listing.id %}" class="btn btn-success">
+                        <i class="fas fa-check"></i> Mark as Sold
+                    </a>
+                    <a href="{% url 'delete_listing' listing.id %}" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Delete
+                    </a>
+                    {% endif %}
+                    {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-primary">Login to Contact Seller</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Similar Listings -->
+{% if similar_listings %}
+<div class="mt-5">
+    <h3>Similar Listings</h3>
+    <div class="row">
+        {% for similar in similar_listings %}
+        <div class="col-md-3 mb-4">
+            <div class="card h-100">
+                {% if similar.images.first %}
+                <img src="{{ similar.images.first.image.url }}" class="card-img-top" alt="{{ similar.title }}" style="height: 200px; object-fit: cover;">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ similar.title|truncatewords:5 }}</h5>
+                    <p class="text-primary fw-bold">₵{{ similar.price }}</p>
+                    <a href="{% url 'listing_detail' similar.id %}" class="btn btn-sm btn-primary">View</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+

@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - OpenMart{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <div class="hero-content">
+                    <h1>Your One-Stop Social Marketplace</h1>
+                    <p>Welcome to OpenMart, a place where you can buy and sell everything. Connect with your local community and discover amazing deals every day!</p>
+                    <div class="d-flex gap-3">
+                        <a href="{% url 'listing_list' %}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-shopping-bag"></i> Shop Now
+                        </a>
+                        {% if user.is_authenticated %}
+                        <a href="{% url 'create_listing' %}" class="btn btn-outline-primary btn-lg">
+                            <i class="fas fa-plus-circle"></i> Sell Your Product
+                        </a>
+                        {% else %}
+                        <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg">
+                            <i class="fas fa-plus-circle"></i> Sell Your Product
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="text-center">
+                    <i class="fas fa-store" style="font-size: 300px; color: var(--primary); opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Service Icons -->
+<div class="service-icons">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="service-icon">
+                    <i class="fas fa-headset"></i>
+                    <h6>Responsive</h6>
+                    <p>Customer service available 24/7</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="service-icon">
+                    <i class="fas fa-shield-alt"></i>
+                    <h6>Secure</h6>
+                    <p>Certified marketplace since 2024</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="service-icon">
+                    <i class="fas fa-truck"></i>
+                    <h6>Shipping</h6>
+                    <p>Free, fast, and reliable worldwide</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="service-icon">
+                    <i class="fas fa-sync-alt"></i>
+                    <h6>Transparent</h6>
+                    <p>Hassle-free return policy</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Featured Products -->
+{% if featured_listings %}
+<div class="mb-5">
+    <div class="section-header">
+        <h2>Featured Products</h2>
+        <a href="{% url 'listing_list' %}?sort=-views">View All <i class="fas fa-arrow-right"></i></a>
+    </div>
+    <div class="row">
+        {% for listing in featured_listings %}
+        <div class="col-6 col-sm-6 col-md-4 col-lg-3 mb-4">
+            <div class="product-card">
+                <div class="product-image">
+                    {% if listing.images.first %}
+                    <img src="{{ listing.images.first.image.url }}" alt="{{ listing.title }}">
+                    {% else %}
+                    <img src="https://via.placeholder.com/300x250?text=No+Image" alt="{{ listing.title }}">
+                    {% endif %}
+                    {% if listing.is_featured %}
+                    <span class="product-badge">Featured</span>
+                    {% endif %}
+                    {% if listing.is_boosted_active %}
+                    <span class="product-badge" style="background: var(--success); top: 50px;">Boosted</span>
+                    {% endif %}
+                </div>
+                <div class="product-info">
+                    <div class="product-category">{{ listing.category.name|default:"Uncategorized" }}</div>
+                    <div class="product-title">{{ listing.title|truncatewords:8 }}</div>
+                    <div class="product-rating">
+                        <span class="stars">
+                            {% for i in "12345"|make_list %}
+                                {% if forloop.counter <= listing.seller.average_rating|floatformat:0|add:"0" %}
+                                    <i class="fas fa-star"></i>
+                                {% else %}
+                                    <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </span>
+                        <span class="count">({{ listing.seller.total_ratings }})</span>
+                    </div>
+                    <div class="product-price">
+                        <span class="current">₵{{ listing.price }}</span>
+                        {% if listing.negotiable %}
+                        <small class="text-muted">(Negotiable)</small>
+                        {% endif %}
+                    </div>
+                    <a href="{% url 'listing_detail' listing.id %}" class="btn btn-outline-primary btn-sm w-100 mt-3">View Details</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Recent Products -->
+{% if recent_listings %}
+<div class="mb-5">
+    <div class="section-header">
+        <h2>Recent Listings</h2>
+        <a href="{% url 'listing_list' %}?sort=-created_at">View All <i class="fas fa-arrow-right"></i></a>
+    </div>
+    <div class="row">
+        {% for listing in recent_listings|slice:":8" %}
+        <div class="col-6 col-sm-6 col-md-4 col-lg-3 mb-4">
+            <div class="product-card">
+                <div class="product-image">
+                    {% if listing.images.first %}
+                    <img src="{{ listing.images.first.image.url }}" alt="{{ listing.title }}">
+                    {% else %}
+                    <img src="https://via.placeholder.com/300x250?text=No+Image" alt="{{ listing.title }}">
+                    {% endif %}
+                    <span class="product-badge" style="background: var(--success);">New</span>
+                </div>
+                <div class="product-info">
+                    <div class="product-category">{{ listing.category.name|default:"Uncategorized" }}</div>
+                    <div class="product-title">{{ listing.title|truncatewords:8 }}</div>
+                    <div class="product-rating">
+                        <span class="stars">
+                            {% for i in "12345"|make_list %}
+                                {% if forloop.counter <= listing.seller.average_rating|floatformat:0|add:"0" %}
+                                    <i class="fas fa-star"></i>
+                                {% else %}
+                                    <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </span>
+                        <span class="count">({{ listing.seller.total_ratings }})</span>
+                    </div>
+                    <div class="product-price">
+                        <span class="current">₵{{ listing.price }}</span>
+                        {% if listing.negotiable %}
+                        <small class="text-muted">(Negotiable)</small>
+                        {% endif %}
+                    </div>
+                    <a href="{% url 'listing_detail' listing.id %}" class="btn btn-outline-primary btn-sm w-100 mt-3">View Details</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Popular Categories -->
+{% if popular_categories %}
+<div class="mb-5">
+    <div class="section-header">
+        <h2>Popular Categories</h2>
+        <a href="{% url 'listing_list' %}">View All <i class="fas fa-arrow-right"></i></a>
+    </div>
+    <div class="row">
+        {% for category in popular_categories|slice:":8" %}
+        <div class="col-6 col-sm-6 col-md-4 col-lg-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div style="font-size: 48px; margin-bottom: 15px;">{{ category.icon }}</div>
+                    <h5 class="card-title">{{ category.name }}</h5>
+                    <p class="text-muted">{{ category.listing_count }} listings</p>
+                    <a href="{% url 'listing_list' %}?category={{ category.name }}" class="btn btn-outline-primary btn-sm">Browse</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Promotional Banners -->
+<div class="row mb-5">
+    <div class="col-12 col-md-6 mb-4">
+        <div class="card" style="background: var(--gray-light); border: none;">
+            <div class="card-body p-4">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h4 class="fw-bold">Free Shipping Everywhere!</h4>
+                        <p>Special for orders over ₵500 worldwide. Available throughout the year.</p>
+                        <a href="{% url 'listing_list' %}" class="btn btn-primary">Shop Now</a>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <i class="fas fa-shipping-fast" style="font-size: 80px; color: var(--primary); opacity: 0.5;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card" style="background: var(--gray-light); border: none;">
+            <div class="card-body p-4">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h4 class="fw-bold">Best Deals!</h4>
+                        <p>Up to 50% off on selected products!</p>
+                        <a href="{% url 'listing_list' %}?sort=-views" class="btn btn-primary">Shop Now</a>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <i class="fas fa-tags" style="font-size: 80px; color: var(--primary); opacity: 0.5;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

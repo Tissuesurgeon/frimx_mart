@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Block User - OpenMart{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h3 class="mb-0"><i class="fas fa-ban"></i> Block User</h3>
+            </div>
+            <div class="card-body">
+                <p>Are you sure you want to block <strong>{{ user_to_block.username }}</strong>?</p>
+                <p class="text-muted">You will no longer receive messages from this user.</p>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Reason (optional)</label>
+                        <textarea name="reason" class="form-control" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-ban"></i> Block User
+                    </button>
+                    <a href="{% url 'dashboard' %}" class="btn btn-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
